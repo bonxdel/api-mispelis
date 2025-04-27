@@ -182,4 +182,17 @@ servidor.post("/registro", async (peticion, respuesta) => {
 });
 
 
+// Middlewares para manejo de errores
+servidor.use((error,peticion,respuesta,siguiente) => {
+    respuesta.status(400);
+    respuesta.json({ error : "error en la petición" });
+});
+
+
+servidor.use((peticion,respuesta) => {
+    respuesta.status(404);
+    respuesta.json({ error : "recurso no encontrado" });
+});
+
+
 servidor.listen(process.env.PORT);
