@@ -17,11 +17,13 @@ export async function guardarPeli(peli) {
     let cliente;
 
     try {
+        // Conexión a la base de datos
         const conexion = await conectar();
         cliente = conexion.cliente;
         const db = conexion.db;
         const coleccion = db.collection("pelis");
 
+        // Busca en la colección un documento que tenga el mismo usuario y el mismo título que la peli recibida
         const existente = await coleccion.findOne({
             usuario: peli.usuario,
             title: peli.title || peli.titulo,
@@ -37,17 +39,14 @@ export async function guardarPeli(peli) {
             );
 
         } else {
-            // Si no existe, insertamos la peli
+            // Si no existe, se añade la peli en la colección
             const resultado = await coleccion.insertOne(peli);
-            peli._id = resultado.insertedId; // Aquí le asignamos el _id generado
-            return peli; // Devolvemos el objeto peli completo con _id
+            // Se genera un _id para la peli
+            peli._id = resultado.insertedId; //
+            return peli;
         }
-        return { mensaje: "Película guardada" };
-
     } catch (error) {
         return { error: "Error al guardar la peli" };
-    } finally {
-        if (cliente) await cliente.close();
     }
 }
 
@@ -57,7 +56,8 @@ export async function cambiarCategoria(id, nuevoTipo) {
     let cliente;
 
     try {
-        const conexion = await conectar(); // Conectamos a la base de datos
+        // Conectamos a la base de datos
+        const conexion = await conectar();
         cliente = conexion.cliente;
         const db = conexion.db;
         const coleccion = db.collection("pelis");
@@ -68,26 +68,28 @@ export async function cambiarCategoria(id, nuevoTipo) {
             { $set: { tipo: nuevoTipo } }
         );
 
-        // Si se modificó una película, la buscamos y la devolvemos
+        // Si se modifica una peli, la buscamos y la devolvemos
         if (resultado.modifiedCount === 1) {
             const peliActualizada = await coleccion.findOne({ _id: new ObjectId(id) });
-            await cliente.close(); // Cerramos conexión después de éxito
+            // Cierra la conexión y nos devuelve la peli actualizada
+            await cliente.close();
             return peliActualizada;
         } else {
-            await cliente.close(); // Cerramos conexión aunque no encuentre
+            // Cierra la conexión aunque no se encuentre
+            await cliente.close();
             return null;
         }
     } catch (error) {
-        console.error("❌ Error al cambiar categoría:", error);
+        console.error("Error al cambiar categoría:", error);
         if (cliente) {
-            await cliente.close(); // Cerramos conexión en caso de error
+            await cliente.close();
         }
         return null;
     }
 }
 
 
-// Función para borrar pelis de la bd
+// Función para borrar pelis de la base de datos
 export async function borrarPeli(id){
     return new Promise((ok, ko) => {
         MongoClient.connect(urlMongo)
