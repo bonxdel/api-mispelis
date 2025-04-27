@@ -56,7 +56,7 @@ export async function cambiarCategoria(id, nuevoTipo) {
     let cliente;
 
     try {
-        // Conectamos a la base de datos
+        // Conexión a la base de datos
         const conexion = await conectar();
         cliente = conexion.cliente;
         const db = conexion.db;
@@ -90,26 +90,25 @@ export async function cambiarCategoria(id, nuevoTipo) {
 
 
 // Función para borrar pelis de la base de datos
-export async function borrarPeli(id){
-    return new Promise((ok, ko) => {
-        MongoClient.connect(urlMongo)
-        .then(conexion => {
-            let coleccion = conexion.db("mispelis").collection("pelis");
+export async function borrarPeli(id) {
+    let conexion;
 
-            coleccion.deleteOne({ _id: new ObjectId(id) })
-            .then(({ deletedCount }) => {
-                conexion.close();
-                ok(deletedCount);
-            })
-            .catch(() => {
-                conexion.close();
-                ko({ error: "error en base de datos" });
-            });
-        })
-        .catch((error) => {
-            console.error("Error en la base de datos:", error);
-            conexion.close();
-            ko({ error: "error en base de datos" });
-        });
-    });
+    try {
+        // Conexión a la base de datos
+        conexion = await MongoClient.connect(urlMongo);
+        let coleccion = conexion.db("mispelis").collection("pelis");
+
+        // Intenta borrar el documento
+        const { deletedCount } = await coleccion.deleteOne({ _id: new ObjectId(id) });
+
+        await conexion.close();
+        return deletedCount;
+
+    } catch (error) {
+        if (conexion) {
+            await conexion.close();
+        }
+        console.error("Error en la base de datos:", error);
+        return { error: "error en base de datos" };
+    }
 }
