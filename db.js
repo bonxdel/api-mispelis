@@ -80,8 +80,8 @@ export async function cambiarCategoria(id, nuevoTipo) {
             return null;
         }
     } catch (error) {
-        console.error("Error al cambiar categoría:", error);
         if (cliente) {
+            // Si hay un error, se cierra la conexión
             await cliente.close();
         }
         return null;
@@ -89,7 +89,7 @@ export async function cambiarCategoria(id, nuevoTipo) {
 }
 
 
-// Función para borrar pelis de la base de datos
+// Función para borrar pelis por su id de la base de datos
 export async function borrarPeli(id) {
     let conexion;
 
@@ -98,17 +98,18 @@ export async function borrarPeli(id) {
         conexion = await MongoClient.connect(urlMongo);
         let coleccion = conexion.db("mispelis").collection("pelis");
 
-        // Intenta borrar el documento
+        // Intenta borrar el documento si el _id coincide con el recibido
         const { deletedCount } = await coleccion.deleteOne({ _id: new ObjectId(id) });
 
+        // Cierra la conexión y devuelve la cantidad de ítems eliminados
         await conexion.close();
         return deletedCount;
 
     } catch (error) {
+        // Si hay un error mientras existe la conexión, la cierra
         if (conexion) {
             await conexion.close();
         }
-        console.error("Error en la base de datos:", error);
         return { error: "error en base de datos" };
     }
 }

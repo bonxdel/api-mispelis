@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import { guardarPeli, borrarPeli, cambiarCategoria } from "./db.js";
 
-
 dotenv.config();
 
 const urlMongo = process.env.DB_URL;
@@ -19,7 +18,7 @@ servidor.post("/login", async (peticion, respuesta) => {
     const { usuario, contraseña } = peticion.body;
 
     try {
-        // Se conecta a la base de datos
+        // Conexión a la base de datos
         const conexion = await MongoClient.connect(urlMongo);
         const baseDatos = conexion.db("mispelis");
         const usuarios = baseDatos.collection("usuariosmp");
